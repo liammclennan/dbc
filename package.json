@@ -2,13 +2,21 @@
   "author": "Liam McLennan",
   "name": "dbc",
   "description": "Basic design by contract support",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "url": ""
   },
   "main": "./dbc.js",
   "scripts": {
     "test": "mocha tests/"
+  },
+  "keywords": [
+    "design",
+    "contract"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:liammclennan/db.git"
   },
   "engines": {
     "node": "*"
