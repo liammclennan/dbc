@@ -6,6 +6,26 @@
 
   describe('dbc', function() {
     return describe('asserting', function() {
+
+      describe('asserting property types', function() {
+        it('should do nothing if the object matches the definition', function () {
+          dbc.assertPropertyTypes({a:1, b:'hello'}, {a:'number', b: 'string'});
+        });
+
+	it('should error if a property is undefined', function () {
+	  assert.throws(function () {
+	    dbc.assertPropertyTypes({a:1}, {a:'number', b: 'string'});
+	  });        
+	});
+
+	it('should error if a property is of the wrong type', function () {
+	  assert.throws(function () {
+	    dbc.assertPropertyTypes({a: 1,b: 2}, {a:'number', b: 'string'});
+	  });
+	});
+      });
+
+
       describe('a true condition', function() {
         return it('should do nothing', function() {
           return dbc.assert(true, 'message');

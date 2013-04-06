@@ -15,6 +15,13 @@
       if (!(o instanceof type)) {
         throw new Error(message != null ? message : message = "expected " + o + " to be an instance of " + type.name);
       }
+    },
+    assertPropertyTypes: function(o, definition) {
+      for (var key in definition) {
+        if (typeof o[key] !== definition[key]) {
+          throw new Error('expected property ' + key + ' of type ' + definition[key]);
+        }
+      }
     }
   };
 
