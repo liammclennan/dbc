@@ -7,24 +7,55 @@
   describe('dbc', function() {
     return describe('asserting', function() {
 
+      describe('asserting function arity', function () {
+        describe('null function', function () {
+          it('should error', function () {
+            assert.throws(function () {
+              dbc.assertFunctionArity(null, 7);
+            });  
+          });
+        });
+
+        describe('not a function', function () {
+          it('should error', function () {
+            assert.throws(function () {
+              dbc.assertFunctionArity('sfsafd', 7);
+            });  
+          });
+        });
+
+        describe('function with correct arity', function () {
+          it('should not error', function () {
+            dbc.assertFunctionArity(function (one,two,three) {}, 3);
+          });
+        });
+
+        describe('function with incorrect arity', function () {
+          it('should error', function () {
+            assert.throws(function () {
+              dbc.assertFunctionArity(function (one,two,three) {}, 7);
+            });  
+          });
+        });
+      });
+
       describe('asserting property types', function() {
         it('should do nothing if the object matches the definition', function () {
           dbc.assertPropertyTypes({a:1, b:'hello'}, {a:'number', b: 'string'});
         });
 
-	it('should error if a property is undefined', function () {
-	  assert.throws(function () {
-	    dbc.assertPropertyTypes({a:1}, {a:'number', b: 'string'});
-	  });        
-	});
+      	it('should error if a property is undefined', function () {
+      	  assert.throws(function () {
+      	    dbc.assertPropertyTypes({a:1}, {a:'number', b: 'string'});
+      	  });        
+      	});
 
-	it('should error if a property is of the wrong type', function () {
-	  assert.throws(function () {
-	    dbc.assertPropertyTypes({a: 1,b: 2}, {a:'number', b: 'string'});
-	  });
-	});
+      	it('should error if a property is of the wrong type', function () {
+      	  assert.throws(function () {
+      	    dbc.assertPropertyTypes({a: 1,b: 2}, {a:'number', b: 'string'});
+      	  });
+      	});
       });
-
 
       describe('a true condition', function() {
         return it('should do nothing', function() {
@@ -43,7 +74,7 @@
           return it('should do nothing', function() {
             var f;
             f = function() {};
-            return dbc.assert_is_function(f, 'message');
+            return dbc.assertIsFunction(f, 'message');
           });
         });
         describe('for null', function() {
@@ -94,13 +125,13 @@
         });
         describe('for an instance of a type', function() {
           return it('should do nothing', function() {
-            return dbc.assert_is_instance(new type('john'), type, 'error message');
+            return dbc.assertIsInstance(new type('john'), type, 'error message');
           });
         });
         describe('for an instance of a different type', function() {
           return it('should throw an error', function() {
             return assert.throws(function() {
-              return dbc.assert_is_instance(new other(), type);
+              return dbc.assertIsInstance(new other(), type);
             }, function(err) {
               return err instanceof Error && err.message === 'expected [object Object] to be an instance of Person';
             });
@@ -109,7 +140,7 @@
         return describe('for an object', function() {
           return it('should throw an error', function() {
             return assert.throws(function() {
-              return dbc.assert_is_instance({
+              return dbc.assertIsInstance({
                 a: 1
               }, type, 'error message');
             }, Error);
