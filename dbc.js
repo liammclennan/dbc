@@ -11,6 +11,11 @@
         throw new Error(message != null ? message : message = 'expected a function');
       }
     },
+    assertIsObject: function (o, message) {
+      if (!o || (typeof o) != 'object') {
+        throw new Error(message ? message : 'argument is not an object');
+      }
+    },
     assertIsInstance: function(o, type, message) {
       if (!(o instanceof type)) {
         throw new Error(message != null ? message : message = "expected " + o + " to be an instance of " + type.name);
