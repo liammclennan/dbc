@@ -3,13 +3,18 @@ Features
 
 Check a value:
 
+```
+#!javascript
     dbc.type(1, 'number', 'optional error message');
     dbc.isFunction(function () {}, 'optional error message');
     dbc.functionArity(function () {}, 0, 'optional error message');
     // etc
+```
 
 Check an object:
 
+```
+#!javascript
     dbc.check({
         a: 1,
         b: "cat in the hat",
@@ -26,9 +31,12 @@ Check an object:
         b: [{validator: 'type', args: ['string']}],
         c: [{validator: 'isFunction'}, {validator: 'functionArity', args: [2, {message: 'This is a more advanced error object', field: 'c'}]}]
     });
+```
 
 Validate an object (same as check except that it returns an array of errors instead of throwing an exception at the first error):
 
+```
+#!javascript
     dbc.validate({
         a: 1,
         b: "cat in the hat",
@@ -45,7 +53,7 @@ Validate an object (same as check except that it returns an array of errors inst
         b: [{validator: 'type', args: ['string']}],
         c: [{validator: 'isFunction'}, {validator: 'functionArity', args: [2, {message: 'This is a more advanced error object', field: 'c'}]}]
     });
-
+```
 
 Test
 ----
