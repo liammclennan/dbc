@@ -3,8 +3,7 @@ Features
 
 Check a value:
 
-```
-#!javascript
+```javascript
     dbc.type(1, 'number', 'optional error message');
     dbc.isFunction(function () {}, 'optional error message');
     dbc.functionArity(function () {}, 0, 'optional error message');
@@ -13,8 +12,7 @@ Check a value:
 
 Check an object:
 
-```
-#!javascript
+```javascript
     dbc.check({
         a: 1,
         b: "cat in the hat",
@@ -35,8 +33,7 @@ Check an object:
 
 Validate an object (same as check except that it returns an array of errors instead of throwing an exception at the first error):
 
-```
-#!javascript
+```javascript
     dbc.validate({
         a: 1,
         b: "cat in the hat",
