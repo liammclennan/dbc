@@ -1,18 +1,54 @@
-dbc
-===
+Features
+--------
 
-Basic design by contract support for node.js.
+Check a value:
 
-Usage
------
+    dbc.type(1, 'number', 'optional error message');
+    dbc.isFunction(function () {}, 'optional error message');
+    dbc.functionArity(function () {}, 0, 'optional error message');
+    // etc
 
-See the tests for examples. Expect things like:
+Check an object:
 
-    dbc.assert(items.length > 16, "there are not enough items");
+    dbc.check({
+        a: 1,
+        b: "cat in the hat",
+        c: function (f, s) { return f + s; }
+    }, {
+        a: [
+            {validator: 'required', args: ['optional error message']}, 
+            {validator: 'type', args: ['number']}, 
+            {validator: 'custom', args: [ function (v) { 
+                // custom validator function should return a boolean
+                return v > 0; 
+            }]}
+        ],
+        b: [{validator: 'type', args: ['string']}],
+        c: [{validator: 'isFunction'}, {validator: 'functionArity', args: [2, {message: 'This is a more advanced error object', field: 'c'}]}]
+    });
 
-Tests
------
+Validate an object (same as check except that it returns an array of errors instead of throwing an exception at the first error):
 
-To run the tests:
+    dbc.validate({
+        a: 1,
+        b: "cat in the hat",
+        c: function (f, s) { return f + s; }
+    }, {
+        a: [
+            {validator: 'required', args: ['optional error message']}, 
+            {validator: 'type', args: ['number']}, 
+            {validator: 'custom', args: [ function (v) { 
+                // custom validator function should return a boolean
+                return v > 0; 
+            }]}
+        ],
+        b: [{validator: 'type', args: ['string']}],
+        c: [{validator: 'isFunction'}, {validator: 'functionArity', args: [2, {message: 'This is a more advanced error object', field: 'c'}]}]
+    });
 
-    npm test
+
+Test
+----
+
+    npm install -g jasmine-node
+    jasmine-node --coffee spec/

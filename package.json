@@ -1,27 +1,26 @@
 {
-  "author": "Liam McLennan",
   "name": "dbc",
-  "description": "Basic design by contract support",
-  "version": "0.0.5",
-  "repository": {
-    "url": ""
+  "version": "0.0.1",
+  "description": "Design by contract and type checking assertions",
+  "main": "dbc.js",
+  "directories": {
+    "test": "test"
   },
-  "main": "./dbc.js",
-  "scripts": {
-    "test": "mocha tests/"
-  },
-  "keywords": [
-    "design",
-    "contract"
-  ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:liammclennan/dbc.git"
+    "url": "https://github.com/liammclennan/dbc.git"
   },
-  "engines": {
-    "node": "*"
+  "keywords": [
+    "dbc",
+    "validation",
+    "types"
+  ],
+  "author": "Liam McLennan",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/liammclennan/dbc/issues"
   },
-  "devDependencies": {
-    "mocha": "~1.8.1"
+  "dependencies": {
+    "underscore": "~1.5.1"
   }
 }
