@@ -1,6 +1,6 @@
 {
   "name": "dbc",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Design by contract and type checking assertions",
   "main": "dbc.js",
   "directories": {
