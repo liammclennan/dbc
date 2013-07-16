@@ -1,3 +1,27 @@
+`dbc` is a small library for design-by-contract defensive coding in javascript. 
+
+It focuses especially on type assertions in an attempt to provide a small compensation for JavaScript's unfortunate dynamicness.
+
+Have a function that requires a numeric argument? Try:
+
+```javascript
+function (num) {
+    dbc.type(num, 'number');
+    // the rest of your function
+}
+```
+
+or if the function argument is an object, and you want to collect the validation results:
+
+```javascript
+function (myComplexObject) {
+    var messages = dbc.validate(myComplexObject, {
+        firstProp: [{validator: 'required'}]
+    });
+    // the rest of your function
+}
+```        
+
 Features
 --------
 
