@@ -123,7 +123,65 @@ describe 'dbc', ->
 
 			it 'should fail', ->
 				expect(-> dbc.check o, spec).toThrow()
-		
+	
+	describe 'assert is array', ->
+
+		describe 'array', ->
+			it 'should pass', ->
+				dbc.isArray([1,2,3])
+
+			describe 'empty array', ->
+				it 'should pass', ->
+					dbc.isArray([])
+
+		describe 'array like', ->
+			it 'should throw', ->
+				expect(-> dbc.isArray arguments).toThrow()
+
+		describe 'not an array', ->
+			it 'should throw', ->
+				expect(-> dbc.isArray 'cat').toThrow()
+
+	describe 'assert isNonEmptyCollection', ->
+		describe 'array', ->
+			describe 'empty', ->
+				it 'should throw', ->
+					expect(-> dbc.isNonEmptyCollection []).toThrow()
+			describe 'non empty', ->
+				it 'should pass', ->
+					dbc.isNonEmptyCollection [1,2,3]
+
+		describe 'object', ->
+			it 'should throw', ->
+				expect(-> dbc.isNonEmptyCollection {a:1}).toThrow()
+
+		describe 'string', ->
+			it 'should pass', ->
+				dbc.isNonEmptyCollection 'foo'
+
+		describe 'custom collection', ->
+			it 'should pass', ->
+				dbc.isNonEmptyCollection {length:1}
+
+	describe 'assert isEnumerable', ->
+		describe 'array', ->
+			it 'should pass', ->
+				dbc.isEnumerable([])
+
+		describe 'object', ->
+			it 'should throw', ->
+				expect(-> dbc.isEnumerable({a:1})).toThrow()
+
+		describe 'custom enumerable', ->
+
+			describe 'with foreach function', ->
+				it 'should pass', ->
+					dbc.isEnumerable {forEach: ->}
+
+			describe 'without foreach function', ->
+				it 'should throw', ->
+					expect(-> dbc.isEnumerable {forEach: 1}).toThrow()
+
 	describe 'assert type', ->
 
 		describe 'for matching array', ->

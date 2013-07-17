@@ -50,7 +50,24 @@
             if (!isExisting(v)) {
                 storeMessage(message || 'expected a defined value');
             }  
-        },  
+        },
+        isArray: function (v, message) {
+            if (isExisting(v) && !_.isArray(v)) {
+                storeMessage(message || 'expected an array')
+            }
+        },
+        isEnumerable: function (v, message) {
+            if (isExisting(v) && typeof v.forEach !== 'function') {
+                storeMessage(message || 'expected an object with a forEach function');
+            }
+        },
+        isNonEmptyCollection: function (v, message) {
+            if (!isExisting(v)) return;
+            
+            if (!(typeof v.length === 'number' && v.length > 0)) {
+                throw new Error(message || 'expected collection with length > 0');
+            }
+        },
         isFunction: function(f, message) {
             if (isExisting(f) && typeof f != 'function') {
                 storeMessage(message || 'expected a function');
