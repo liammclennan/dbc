@@ -3,12 +3,16 @@
         , messages = []
         , _ = _ || require('underscore')
         
-
     dbc = {
         // will throw on first error
-        check: function(o, spec) {
+        check: function(o, spec, message) {
+            message = message || ''
             mode = 'check';
-            applyValidators.call(this, o, spec);
+            try {
+                applyValidators.call(this, o, spec);    
+            } catch (e) {
+                throw new Error(message ? message + ': ' + e.message : e.message);
+            }            
         },
         // will return an array of messages
         validate: function (o, spec) {

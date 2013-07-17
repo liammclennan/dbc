@@ -28,12 +28,22 @@ describe 'dbc', ->
 
 	describe 'check', ->
 
+		describe 'with message arg', ->
+			o = 
+				a: 'foo'
+			spec = 
+				a: [{validator: 'required'},{validator: 'type', args: ['string']}]
+				b: [{validator: 'required'}]
+
+			it 'should throw with message', ->
+				expect(-> dbc.check o, spec, 'this is a message').toThrow(new Error('this is a message: expected a defined value'))
+
 		describe 'simple object types matching spec', ->
 			o = 
 				a: 1
 				b: 'foo'
 			spec = 
-				a: [{validator: 'required', args: ['number']}, {validator: 'type', args: ['number']}]
+				a: [{validator: 'required'}, {validator: 'type', args: ['number']}]
 				b: [{validator: 'type', args: ['string']}]
 
 			it 'should pass', ->
