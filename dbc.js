@@ -4,27 +4,19 @@
     var _ = this._ || require('underscore');
         
     dbc = {
-	makeConstructor: function(spec) {
-		var f = function (prps) {
-			var c = this;
-			_.each(_.keys(spec), function (key) {
-				c[key] = prps[key];			
-			});
-			dbc.check(c, c.__spec);
-		};
-		f.prototype.__spec = spec;
-		return f;
-	},
-	generate: function (spec, name) {
-		var propertySetting = _.map(_.keys(spec), function (key) {
-			return "    this['" + key + "'] = prps['" + key + "'];\n"  
-		});
-		return "function " + name + "(prps) {\n" + 
-			propertySetting.join('') + 
-			"    dbc.check(this, this.__spec);\n" + 
-		"}\n" + 
-		name + ".prototype.__spec = " + JSON.stringify(spec) + ";\n";
-	},
+
+        makeConstructor: function(spec) {
+            var f = function (prps) {
+                var c = this;
+                _.each(_.keys(spec), function (key) {
+                    c[key] = prps[key];			
+                });
+                dbc.check(c, c.__spec);
+            };
+            f.prototype.__spec = spec;
+            return f;
+        },
+
         // will throw on first error
         check: function(o, spec, message) {
             message = message || ''
