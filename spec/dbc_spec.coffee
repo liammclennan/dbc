@@ -7,6 +7,16 @@
 describe 'dbc', ->
 	dbc = require '../dbc'
 
+	describe 'generate', ->
+		describe 'an object with a single property', ->
+			o = 
+				a: [{validator: 'type', args: ['string']}]
+
+			it 'should pass', ->
+				c = dbc.generate o, 'Atype'
+				console.log c
+
+
 	describe 'validate', ->
 
 		describe 'simple object types not matching spec', ->
