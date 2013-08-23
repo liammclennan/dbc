@@ -5,6 +5,19 @@
         
     dbc = {
 
+        wrap: function(original, specs) {
+            return function () {
+                var a = arguments;
+                _.each(_.keys(specs), function (k,index) {
+                    var o={},s={};
+                    o[k] = a[index];
+                    s[k] = specs[k];
+                    dbc.check(o,s);
+                });
+                return original.apply(this,a);    
+            };       
+        },
+
         makeConstructor: function(spec) {
             var f = function (prps) {
                 var c = this;
@@ -46,7 +59,10 @@
             }
         },
         type: function (v, type, message) {
-            if (!isExisting(v)) return;
+            if (type.charAt(type.length-1) == '?') {
+                if (!isExisting(v)) return;
+                type = type.substring(0, type.length-1);
+            }
 
             message = message || 'Expected type of ' + type + ' but was ' + typeof v;
             if (type == 'array') {
@@ -54,6 +70,9 @@
                     storeMessage(message)
                 }
                 return;
+            }
+            if (typeof v == 'undefined' || v == null) {
+                storeMessage('Expected type of ' + type + ' but was null or undefined');
             }
             if ((typeof v) != type) {
                 storeMessage(message);

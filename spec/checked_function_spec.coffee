@@ -6,23 +6,40 @@ describe 'type checked function', ->
     it 'should still work', ->
         f = dbc.wrap((thing)->
             "pre-#{thing}-suf"
-        , {thing: o})
+        , {})
         expect(f 'middle').toBe('pre-middle-suf')
+
+    it 'should bind "this" properly', ->
+        o =
+            a: 5
+            b: dbc.wrap((n)->
+                @a + n
+            , {})
+        expect(o.b(64)).toBe(69)
 
     it 'should fail if the first argument does not match its type', ->
         f = dbc.wrap((thing) ->
             "pre-#{thing}-suf"
-        , {thing: o})
+        , {"0": [{validator:'type',args:['string']}]})
         expect(-> f 2).toThrow()
+
+    it 'should fail if the second argument does not match its type', ->
+        f = dbc.wrap((n1,n2) ->
+            n1 + n2
+        , {
+            "0": [{validator:'type',args:['number']}],
+            "1": [{validator:'type',args:['number']}]
+        })
+        expect(-> f 2, {t: 3}).toThrow()
 
     it 'should allow extra arguments', ->
         f = dbc.wrap((thing, second, third) ->
             "pre-#{thing}-suf"
-        , {thing: o})
+        , {0: [{validator:'type',args:['string']}]})
         expect(f 'mid', 2, 3).toBe('pre-mid-suf')
 
     it 'should not allow extra specs', ->
         f = dbc.wrap((thing) ->
             "pre-#{thing}-suf"
-        , {thing: o, second: {b: [validator: 'required']}})
+        , {0: [{validator:'required'}], 1: [{validator: 'string?'}]})
         expect(-> f 'middle').toThrow();

@@ -1,7 +1,6 @@
 describe 'dbc', ->
 	dbc = require '../dbc'
 
-
 	describe 'validate', ->
 
 		describe 'simple object types not matching spec', ->
@@ -81,9 +80,9 @@ describe 'dbc', ->
 				a: 987979
 			spec =
 				a: [{validator: 'required', args: ['number']}, {validator: 'type', args: ['number']}]
-				b: [{validator: 'type', args: ['string']}]
+				b: [{validator: 'type', args: ['string?']}]
 
-			it 'should fail', ->
+			it 'should pass', ->
 				dbc.check o, spec
 
 		describe 'simple object types with allowed null', ->
@@ -92,9 +91,9 @@ describe 'dbc', ->
 				b: null
 			spec =
 				a: [{validator: 'required', args: ['number']}, {validator: 'type', args: ['number']}]
-				b: [{validator: 'type', args: ['string']}]
+				b: [{validator: 'type', args: ['string?']}]
 
-			it 'should fail', ->
+			it 'should pass', ->
 				dbc.check o, spec
 
 		describe 'object with function', ->
