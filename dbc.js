@@ -1,27 +1,74 @@
-﻿(function () {
+﻿// dbc
+// ===
+// `dbc` is a small library for design-by-contract style defensive coding in javascript. 
+// 
+
+(function () {
     var mode
         , messages = [];
     var _ = this._ || require('underscore');
         
     dbc = {
 
+        // Public API
+        // ==========
+
+        // will throw on first error
+        check: function(o, spec, message) {
+            message = message || ''
+            mode = 'check';
+            try {
+                applyValidators.call(this, o, spec);    
+            } catch (e) {
+                throw new Error(message ? message + ': ' + e.message : e.message);
+            }            
+        },
+
+        // wrap
+        // ----
+        // Wrap returns a wrapped function that applies 'specs' validators to the
+        // functions arguments and 'returnSpec' validators to the return value.
+        // ie 
+        // 
+        //      dbc.wrap(function add(f,s) { return f + s;}, {
+        //          0: [{validator:'type', args:['number']}],
+        //          1:[{validator:'type', args:['number']}]
+        //      }, [{validator: 'type', args:['number']}]);
         wrap: function(original, specs, returnSpec) {
             return function () {
-                var a = arguments;
-                _.each(_.keys(specs || {}), function (k,index) {
-                    var o={},s={};
-                    o[k] = a[index];
-                    s[k] = specs[k];
-                    dbc.check(o,s);
-                });
-                var r = original.apply(this,a);
-                if (returnSpec) {
-                    dbc.check({ret: r}, {ret: returnSpec});
-                }
+                var r;
+                checkArgs(arguments);
+                r = original.apply(this,arguments);
+                checkReturn();
                 return r;
+
+                function checkArgs(args) {
+                    _.each(_.keys(specs || {}), function (k,index) {
+                        var o={},s={};
+                        o[k] = args[index];
+                        s[k] = specs[k];
+                        dbc.check(o,s);
+                    });
+                }
+                function checkReturn() {
+                    if (returnSpec) {
+                        dbc.check({ret: r}, {ret: returnSpec});
+                    }
+                }
             };       
         },
 
+        // generate a constructor from a spec. The constructor
+        // validates that created objects meet the spec.
+        // ie   var Person = dbc.MakeConstructor({
+        //          name: [{validator:'type',args:'string'}],
+        //          age: [{validator:'type',args:'number'}]
+        //      });
+        //      Person.prototype.canDrive = dbc.wrap(function () { 
+        //          return this.age > 16;
+        //      }, null, [{validator:'type',args:'number'}]);
+        //      var p = new Person('John', 22);
+        //      p.canDrive(); // true 
         makeConstructor: function(spec) {
             var f = function (prps) {
                 var c = this;
@@ -34,16 +81,7 @@
             return f;
         },
 
-        // will throw on first error
-        check: function(o, spec, message) {
-            message = message || ''
-            mode = 'check';
-            try {
-                applyValidators.call(this, o, spec);    
-            } catch (e) {
-                throw new Error(message ? message + ': ' + e.message : e.message);
-            }            
-        },
+
         // will return an array of messages
         validate: function (o, spec) {
             mode = 'validate';

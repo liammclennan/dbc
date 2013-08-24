@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>dbc</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h1">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <h1>dbc</h1>
+<p><code>dbc</code> is a small library for design-by-contract style defensive coding in javascript. </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+(<span class="function"><span class="keyword">function</span> <span class="params">()</span> {</span>
+    <span class="keyword">var</span> mode
+        , messages = [];
+    <span class="keyword">var</span> _ = <span class="keyword">this</span>._ || require(<span class="string">'underscore'</span>);
+        
+    dbc = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h1">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <h1>Public API</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <h2>wrap</h2>
+<p>Wrap returns a wrapped function that applies &#39;specs&#39; validators to the
+functions arguments and &#39;returnSpec&#39; validators to the return value.
+ie </p>
+<pre><code> dbc.wrap(function add(f,s) { return f + s;}, {
+     0: [{validator:&#39;type&#39;, args:[&#39;number&#39;]}],
+     1:[{validator:&#39;type&#39;, args:[&#39;number&#39;]}]
+ }, [{validator: &#39;type&#39;, args:[&#39;number&#39;]}]);</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        wrap: <span class="keyword">function</span>(original, specs, returnSpec) {
+            <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> <span class="params">()</span> {</span>
+                <span class="keyword">var</span> r;
+                checkArgs(arguments);
+                r = original.apply(<span class="keyword">this</span>,arguments);
+                checkReturn();
+                <span class="keyword">return</span> r;
+
+                <span class="function"><span class="keyword">function</span> <span class="title">checkArgs</span><span class="params">(args)</span> {</span>
+                    _.each(_.keys(specs || {}), <span class="function"><span class="keyword">function</span> <span class="params">(k,index)</span> {</span>
+                        <span class="keyword">var</span> o={},s={};
+                        o[k] = args[index];
+                        s[k] = specs[k];
+                        dbc.check(o,s);
+                    });
+                }
+                <span class="function"><span class="keyword">function</span> <span class="title">checkReturn</span><span class="params">()</span> {</span>
+                    <span class="keyword">if</span> (returnSpec) {
+                        dbc.check({ret: r}, {ret: returnSpec});
+                    }
+                }
+            };       
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>generate a constructor from a spec. The constructor
+validates that created objects meet the spec.
+ie   var Person = dbc.MakeConstructor({
+         name: [{validator:&#39;type&#39;,args:&#39;string&#39;}],
+         age: [{validator:&#39;type&#39;,args:&#39;number&#39;}]
+     });
+     Person.prototype.canDrive = dbc.wrap(function () { 
+         return this.age &gt; 16;
+     }, null, [{validator:&#39;type&#39;,args:&#39;number&#39;}]);
+     var p = new Person(&#39;John&#39;, 22);
+     p.canDrive(); // true </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        makeConstructor: <span class="keyword">function</span>(spec) {
+            <span class="keyword">var</span> f = <span class="function"><span class="keyword">function</span> <span class="params">(prps)</span> {</span>
+                <span class="keyword">var</span> c = <span class="keyword">this</span>;
+                _.each(_.keys(spec), <span class="function"><span class="keyword">function</span> <span class="params">(key)</span> {</span>
+                    c[key] = prps[key];			
+                });
+                dbc.check(c, c.__spec);
+            };
+            f.prototype.__spec = spec;
+            <span class="keyword">return</span> f;
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>will throw on first error</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        check: <span class="keyword">function</span>(o, spec, message) {
+            message = message || <span class="string">''</span>
+            mode = <span class="string">'check'</span>;
+            <span class="keyword">try</span> {
+                applyValidators.call(<span class="keyword">this</span>, o, spec);    
+            } <span class="keyword">catch</span> (e) {
+                <span class="keyword">throw</span> <span class="keyword">new</span> Error(message ? message + <span class="string">': '</span> + e.message : e.message);
+            }            
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>will return an array of messages</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        validate: <span class="function"><span class="keyword">function</span> <span class="params">(o, spec)</span> {</span>
+            mode = <span class="string">'validate'</span>;
+            applyValidators.call(<span class="keyword">this</span>, o, spec);
+            <span class="keyword">return</span> messages;
+        },
+        custom: <span class="keyword">function</span>(v, test, message) {
+            <span class="keyword">if</span> (!isExisting(v)) <span class="keyword">return</span>;
+            
+            <span class="keyword">if</span> (!test(v)) {
+                storeMessage(message || <span class="string">'failed custom function condition for value '</span> + v);
+            }
+        },
+        assert: <span class="keyword">function</span>(condition, message) {
+            <span class="keyword">if</span> (!condition) {
+                storeMessage(message);
+            }
+        },
+        type: <span class="function"><span class="keyword">function</span> <span class="params">(v, type, message)</span> {</span>
+            <span class="keyword">if</span> (type.charAt(type.length-<span class="number">1</span>) == <span class="string">'?'</span>) {
+                <span class="keyword">if</span> (!isExisting(v)) <span class="keyword">return</span>;
+                type = type.substring(<span class="number">0</span>, type.length-<span class="number">1</span>);
+            }
+
+            message = message || <span class="string">'Expected type of '</span> + type + <span class="string">' but was '</span> + <span class="keyword">typeof</span> v;
+            <span class="keyword">if</span> (type == <span class="string">'array'</span>) {
+                <span class="keyword">if</span> (!_.isArray(v)) {
+                    storeMessage(message)
+                }
+                <span class="keyword">return</span>;
+            }
+            <span class="keyword">if</span> (<span class="keyword">typeof</span> v == <span class="string">'undefined'</span> || v == <span class="literal">null</span>) {
+                storeMessage(<span class="string">'Expected type of '</span> + type + <span class="string">' but was null or undefined'</span>);
+            }
+            <span class="keyword">if</span> ((<span class="keyword">typeof</span> v) != type) {
+                storeMessage(message);
+            }
+        },
+        required: <span class="keyword">function</span>(v, message) {
+            <span class="keyword">if</span> (!isExisting(v)) {
+                storeMessage(message || <span class="string">'expected a defined value'</span>);
+            }  
+        },
+        isArray: <span class="function"><span class="keyword">function</span> <span class="params">(v, message)</span> {</span>
+            <span class="keyword">if</span> (isExisting(v) &amp;&amp; !_.isArray(v)) {
+                storeMessage(message || <span class="string">'expected an array'</span>)
+            }
+        },
+        isEnumerable: <span class="function"><span class="keyword">function</span> <span class="params">(v, message)</span> {</span>
+            <span class="keyword">if</span> (isExisting(v) &amp;&amp; <span class="keyword">typeof</span> v.forEach !== <span class="string">'function'</span>) {
+                storeMessage(message || <span class="string">'expected an object with a forEach function'</span>);
+            }
+        },
+        isNonEmptyCollection: <span class="function"><span class="keyword">function</span> <span class="params">(v, message)</span> {</span>
+            <span class="keyword">if</span> (!isExisting(v)) <span class="keyword">return</span>;
+            
+            <span class="keyword">if</span> (!(<span class="keyword">typeof</span> v.length === <span class="string">'number'</span> &amp;&amp; v.length &gt; <span class="number">0</span>)) {
+                <span class="keyword">throw</span> <span class="keyword">new</span> Error(message || <span class="string">'expected collection with length &gt; 0'</span>);
+            }
+        },
+        isFunction: <span class="keyword">function</span>(f, message) {
+            <span class="keyword">if</span> (isExisting(f) &amp;&amp; <span class="keyword">typeof</span> f != <span class="string">'function'</span>) {
+                storeMessage(message || <span class="string">'expected a function'</span>);
+            }
+        },
+        isObject: <span class="keyword">function</span>(o, message) {
+            <span class="keyword">if</span> (isExisting(o) &amp;&amp; (<span class="keyword">typeof</span> o) != <span class="string">'object'</span>) {
+                storeMessage(message || <span class="string">'argument is not an object'</span>);
+            }
+        },
+        isInstance: <span class="keyword">function</span>(o, type, message) {
+            <span class="keyword">if</span> (!isExisting(o) &amp;&amp; !(o <span class="keyword">instanceof</span> type)) {
+                storeMessage(message || <span class="string">"expected "</span> + o + <span class="string">" to be an instance of "</span> + type.name);
+            }
+        },
+        functionArity: <span class="function"><span class="keyword">function</span> <span class="params">(f, arity, message)</span> {</span>
+            <span class="keyword">if</span> (!isExisting(f)) <span class="keyword">return</span>;
+            <span class="keyword">this</span>.isFunction(f, <span class="string">'cannot check arity of an object that is not a function'</span>);
+            <span class="keyword">if</span> (f.length !== arity) {
+                storeMessage(message || <span class="string">'Function arity is '</span> + f.length + <span class="string">'. Expected '</span> + arity);
+            }
+        }
+    };
+    
+    <span class="function"><span class="keyword">function</span> <span class="title">isExisting</span><span class="params">(v)</span> {</span>
+        <span class="keyword">return</span> <span class="keyword">typeof</span> v !== <span class="string">"undefined"</span> &amp;&amp; v !== <span class="literal">null</span>;
+    }
+
+    <span class="function"><span class="keyword">function</span> <span class="title">applyValidators</span><span class="params">(o, spec)</span> {</span>
+        <span class="keyword">var</span> specKeys = _.keys(spec),
+            dbc = <span class="keyword">this</span>;
+
+        specKeys.forEach(<span class="function"><span class="keyword">function</span> <span class="params">(key)</span> {</span>
+            <span class="keyword">var</span> validators = spec[key];
+            
+            validators.forEach(<span class="keyword">function</span>(validator) {
+                dbc[validator.validator].apply(dbc, [o[key]].concat(validator.args || []))
+            });
+        });
+    }
+
+    <span class="function"><span class="keyword">function</span> <span class="title">storeMessage</span><span class="params">(message)</span> {</span>
+        <span class="keyword">if</span> (mode === <span class="string">'validate'</span>) {
+            messages.push(message);    
+            <span class="keyword">return</span>;
+        }
+        <span class="keyword">throw</span> <span class="keyword">new</span> Error(message);
+    }
+
+    <span class="keyword">if</span> (<span class="keyword">typeof</span> define !== <span class="string">"undefined"</span> &amp;&amp; define !== <span class="literal">null</span>) {
+        define(<span class="string">'dbc'</span>, [], <span class="function"><span class="keyword">function</span> <span class="params">()</span> {</span>
+            <span class="keyword">return</span> dbc;
+        });
+    } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> window !== <span class="string">"undefined"</span> &amp;&amp; window !== <span class="literal">null</span>) {
+        window.dbc = dbc;
+    }
+
+    <span class="keyword">if</span> (<span class="keyword">typeof</span> module !== <span class="string">"undefined"</span> &amp;&amp; module !== <span class="literal">null</span>) {
+        module.exports = dbc;
+    }
+
+})();</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
