@@ -1,28 +1,14 @@
 `dbc` is a small library for design-by-contract defensive coding in javascript. 
 
-It focuses especially on type assertions in an attempt to provide a small compensation for JavaScript's unfortunate dynamicness.
+It focuses especially on type assertions in an attempt to provide a small compensation for JavaScript's unfortunate dynamicness. Some of the ideas were borrowed from ristretto-js.
+
+The core features are:
+
+ * validate values against a specification
+ * generate type constructors from a specification
+ * runtime validation of function arguments and return value (via the `wrap` combinator)
 
 [API Documentation](https://rawgithub.com/liammclennan/dbc/master/docs/dbc.html)
-
-Have a function that requires a numeric argument? Try:
-
-```javascript
-function (num) {
-    dbc.type(num, 'number');
-    // the rest of your function
-}
-```
-
-or if the function argument is an object, and you want to collect the validation results:
-
-```javascript
-function (myComplexObject) {
-    var messages = dbc.validate(myComplexObject, {
-        firstProp: [{validator: 'required'}]
-    });
-    // the rest of your function
-}
-```        
 
 Features
 --------
