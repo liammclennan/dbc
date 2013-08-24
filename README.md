@@ -10,6 +10,11 @@ The core features are:
 
 [API Documentation](https://rawgithub.com/liammclennan/dbc/master/docs/dbc.html)
 
+Install
+---
+
+    npm install dbc
+
 Features
 --------
 
