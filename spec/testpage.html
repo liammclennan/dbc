@@ -1,0 +1,21 @@
+<html>
+<body>
+
+<script type="text/javascript" src="underscore.js"></script>
+<script type="text/javascript" src="../dbc.js"></script>
+<script type="text/javascript">
+
+var personSpec = {
+	name: [{validator:'type', args: ['string']}],
+	yearsElected: [{validator: 'required'}, {validator: 'isNonEmptyCollection'}]
+};
+
+var Person = dbc.makeConstructor(personSpec);
+
+var kevin = new Person({name: 'Kevin',yearsElected:[2007]});
+
+</script>
+
+
+</body>
+</html>

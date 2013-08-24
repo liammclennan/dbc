@@ -1,14 +1,44 @@
 ﻿(function () {
     var mode
-        , messages = []
-        , _ = _ || require('underscore')
+        , messages = [];
+    var _ = this._ || require('underscore');
         
-
     dbc = {
+
+        wrap: function(original, specs) {
+            return function () {
+                var a = arguments;
+                _.each(_.keys(specs), function (k,index) {
+                    var o={},s={};
+                    o[k] = a[index];
+                    s[k] = specs[k];
+                    dbc.check(o,s);
+                });
+                return original.apply(this,a);    
+            };       
+        },
+
+        makeConstructor: function(spec) {
+            var f = function (prps) {
+                var c = this;
+                _.each(_.keys(spec), function (key) {
+                    c[key] = prps[key];			
+                });
+                dbc.check(c, c.__spec);
+            };
+            f.prototype.__spec = spec;
+            return f;
+        },
+
         // will throw on first error
-        check: function(o, spec) {
+        check: function(o, spec, message) {
+            message = message || ''
             mode = 'check';
-            applyValidators.call(this, o, spec);
+            try {
+                applyValidators.call(this, o, spec);    
+            } catch (e) {
+                throw new Error(message ? message + ': ' + e.message : e.message);
+            }            
         },
         // will return an array of messages
         validate: function (o, spec) {
@@ -29,7 +59,10 @@
             }
         },
         type: function (v, type, message) {
-            if (!isExisting(v)) return;
+            if (type.charAt(type.length-1) == '?') {
+                if (!isExisting(v)) return;
+                type = type.substring(0, type.length-1);
+            }
 
             message = message || 'Expected type of ' + type + ' but was ' + typeof v;
             if (type == 'array') {
@@ -37,6 +70,9 @@
                     storeMessage(message)
                 }
                 return;
+            }
+            if (typeof v == 'undefined' || v == null) {
+                storeMessage('Expected type of ' + type + ' but was null or undefined');
             }
             if ((typeof v) != type) {
                 storeMessage(message);
@@ -46,7 +82,24 @@
             if (!isExisting(v)) {
                 storeMessage(message || 'expected a defined value');
             }  
-        },  
+        },
+        isArray: function (v, message) {
+            if (isExisting(v) && !_.isArray(v)) {
+                storeMessage(message || 'expected an array')
+            }
+        },
+        isEnumerable: function (v, message) {
+            if (isExisting(v) && typeof v.forEach !== 'function') {
+                storeMessage(message || 'expected an object with a forEach function');
+            }
+        },
+        isNonEmptyCollection: function (v, message) {
+            if (!isExisting(v)) return;
+            
+            if (!(typeof v.length === 'number' && v.length > 0)) {
+                throw new Error(message || 'expected collection with length > 0');
+            }
+        },
         isFunction: function(f, message) {
             if (isExisting(f) && typeof f != 'function') {
                 storeMessage(message || 'expected a function');

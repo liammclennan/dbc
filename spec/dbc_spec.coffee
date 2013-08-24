@@ -1,21 +1,15 @@
-## <reference path="../../../EnergyMarkets.Web/Scripts/underscore.js" />
-## <reference path="../../../EnergyMarkets.Web/Scripts/src/modules.js" />
-## <reference path="../../../EnergyMarkets.Web/Scripts/src/dbc.js" />
-
-
-
 describe 'dbc', ->
 	dbc = require '../dbc'
 
 	describe 'validate', ->
 
 		describe 'simple object types not matching spec', ->
-			o = 
+			o =
 				a: false
 				b: ['strings']
 				c: /^abc$/
-				d: -2				
-			spec = 
+				d: -2
+			spec =
 				a: [{validator: 'required', args: ['failed truthyness']}, {validator: 'type', args: ['number']}]
 				b: [{validator: 'type', args: ['string','failed string']}]
 				c: [{validator: 'isFunction', args: [{message: 'c must be a function', field: 'c'}]}]
@@ -23,27 +17,37 @@ describe 'dbc', ->
 				e: [{validator: 'required'}]
 
 			it 'should fail', ->
-				result = dbc.validate o, spec 
+				result = dbc.validate o, spec
 				expect(result.length).toBe(5)
 
 	describe 'check', ->
 
+		describe 'with message arg', ->
+			o =
+				a: 'foo'
+			spec =
+				a: [{validator: 'required'},{validator: 'type', args: ['string']}]
+				b: [{validator: 'required'}]
+
+			it 'should throw with message', ->
+				expect(-> dbc.check o, spec, 'this is a message').toThrow(new Error('this is a message: expected a defined value'))
+
 		describe 'simple object types matching spec', ->
-			o = 
+			o =
 				a: 1
 				b: 'foo'
-			spec = 
-				a: [{validator: 'required', args: ['number']}, {validator: 'type', args: ['number']}]
+			spec =
+				a: [{validator: 'required'}, {validator: 'type', args: ['number']}]
 				b: [{validator: 'type', args: ['string']}]
 
 			it 'should pass', ->
 				dbc.check o, spec
 
 		describe 'simple object types not matching spec', ->
-			o = 
+			o =
 				a: false
 				b: 'foo'
-			spec = 
+			spec =
 				a: [{validator: 'required', args: ['failed truthyness']}, {validator: 'type', args: ['number', 'failed number']}]
 				b: [{validator: 'type', args: ['string','failed string']}]
 
@@ -51,52 +55,52 @@ describe 'dbc', ->
 				expect(-> dbc.check o, spec).toThrow()
 
 		describe 'simple object types with not allowed null', ->
-			o = 
+			o =
 				a: null
 				b: 'foo'
-			spec = 
+			spec =
 				a: [{validator: 'required'}, {validator: 'type', args: ['number']}]
 				b: [{validator: 'type', args: ['string']}]
 
 			it 'should fail', ->
 				expect(-> dbc.check o, spec).toThrow()
-				
+
 		describe 'simple object types with not allowed undefined', ->
-			o = 
+			o =
 				b: 'foo'
-			spec = 
+			spec =
 				a: [{validator: 'required', args: ['number']}, {validator: 'type', args: ['number']}]
 				b: [{validator: 'type', args: ['string']}]
 
 			it 'should fail', ->
 				expect(-> dbc.check o, spec).toThrow()
-				
-		describe 'simple object types with allowed undefined', ->
-			o = 
-				a: 987979
-			spec = 
-				a: [{validator: 'required', args: ['number']}, {validator: 'type', args: ['number']}]
-				b: [{validator: 'type', args: ['string']}]
 
-			it 'should fail', ->
+		describe 'simple object types with allowed undefined', ->
+			o =
+				a: 987979
+			spec =
+				a: [{validator: 'required', args: ['number']}, {validator: 'type', args: ['number']}]
+				b: [{validator: 'type', args: ['string?']}]
+
+			it 'should pass', ->
 				dbc.check o, spec
-				
+
 		describe 'simple object types with allowed null', ->
-			o = 
+			o =
 				a: -1
 				b: null
-			spec = 
+			spec =
 				a: [{validator: 'required', args: ['number']}, {validator: 'type', args: ['number']}]
-				b: [{validator: 'type', args: ['string']}]
+				b: [{validator: 'type', args: ['string?']}]
 
-			it 'should fail', ->
+			it 'should pass', ->
 				dbc.check o, spec
-								
+
 		describe 'object with function', ->
-			o = 
+			o =
 				a: -1
 				f: (v) -> v * v
-			spec = 
+			spec =
 				a: [{validator: 'required', args: ['number']}, {validator: 'type', args: ['number']}]
 				f: [{validator: 'isFunction'}]
 
@@ -104,22 +108,80 @@ describe 'dbc', ->
 				dbc.check o, spec
 
 		describe 'object without a function', ->
-			o = 
+			o =
 				a: -1
 				f: 5
-			spec = 
+			spec =
 				a: [{validator: 'required', args: ['number']}, {validator: 'type', args: ['number']}]
 				f: [{validator: 'isFunction'}]
 
 			it 'should fail', ->
 				expect(-> dbc.check o, spec).toThrow()
-		
+
+	describe 'assert is array', ->
+
+		describe 'array', ->
+			it 'should pass', ->
+				dbc.isArray([1,2,3])
+
+			describe 'empty array', ->
+				it 'should pass', ->
+					dbc.isArray([])
+
+		describe 'array like', ->
+			it 'should throw', ->
+				expect(-> dbc.isArray arguments).toThrow()
+
+		describe 'not an array', ->
+			it 'should throw', ->
+				expect(-> dbc.isArray 'cat').toThrow()
+
+	describe 'assert isNonEmptyCollection', ->
+		describe 'array', ->
+			describe 'empty', ->
+				it 'should throw', ->
+					expect(-> dbc.isNonEmptyCollection []).toThrow()
+			describe 'non empty', ->
+				it 'should pass', ->
+					dbc.isNonEmptyCollection [1,2,3]
+
+		describe 'object', ->
+			it 'should throw', ->
+				expect(-> dbc.isNonEmptyCollection {a:1}).toThrow()
+
+		describe 'string', ->
+			it 'should pass', ->
+				dbc.isNonEmptyCollection 'foo'
+
+		describe 'custom collection', ->
+			it 'should pass', ->
+				dbc.isNonEmptyCollection {length:1}
+
+	describe 'assert isEnumerable', ->
+		describe 'array', ->
+			it 'should pass', ->
+				dbc.isEnumerable([])
+
+		describe 'object', ->
+			it 'should throw', ->
+				expect(-> dbc.isEnumerable({a:1})).toThrow()
+
+		describe 'custom enumerable', ->
+
+			describe 'with foreach function', ->
+				it 'should pass', ->
+					dbc.isEnumerable {forEach: ->}
+
+			describe 'without foreach function', ->
+				it 'should throw', ->
+					expect(-> dbc.isEnumerable {forEach: 1}).toThrow()
+
 	describe 'assert type', ->
 
 		describe 'for matching array', ->
 			it 'should pass', ->
 				dbc.type [1,2,3], 'array'
-		
+
 		describe 'for matching string', ->
 			it 'should pass', ->
 				dbc.type 'hello world', 'string'
@@ -145,10 +207,10 @@ describe 'dbc', ->
 		describe 'for null', ->
 			it 'should fail', ->
 				expect(-> dbc.required null).toThrow()
-				
+
 		describe 'for undefined', ->
 			it 'should fail', ->
-				expect(-> dbc.required undefined).toThrow()		
+				expect(-> dbc.required undefined).toThrow()
 
 	describe 'custom', ->
 		describe 'greater than zero', ->
@@ -157,7 +219,7 @@ describe 'dbc', ->
 			describe '7', ->
 				it 'should pass', ->
 					dbc.custom 7, greater_than_zero
-			
+
 			describe '0', ->
 				it 'should throw', ->
 					expect(-> dbc.custom 0, greater_than_zero).toThrow()
@@ -172,5 +234,5 @@ describe 'dbc', ->
 				describe '0', ->
 					it 'should throw', ->
 						expect(-> dbc.custom 0, greater_than_zero, message).toThrow(new Error(message))
-						
-				
+
+
