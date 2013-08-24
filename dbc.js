@@ -72,10 +72,9 @@
 
                 function checkArgs(args) {
                     _.each(_.keys(specs || {}), function (k,index) {
-                        var o={},s={};
-                        o[k] = args[index];
-                        s[k] = specs[k];
-                        dbc.check(o,s);
+                        dbc.check(
+                            {k: args[index] },
+                            { k: specs[k] });
                     });
                 }
                 function checkReturn() {

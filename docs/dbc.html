@@ -137,10 +137,9 @@ eg</p>
 
                 <span class="function"><span class="keyword">function</span> <span class="title">checkArgs</span><span class="params">(args)</span> {</span>
                     _.each(_.keys(specs || {}), <span class="function"><span class="keyword">function</span> <span class="params">(k,index)</span> {</span>
-                        <span class="keyword">var</span> o={},s={};
-                        o[k] = args[index];
-                        s[k] = specs[k];
-                        dbc.check(o,s);
+                        dbc.check(
+                            {k: args[index] },
+                            { k: specs[k] });
                     });
                 }
                 <span class="function"><span class="keyword">function</span> <span class="title">checkReturn</span><span class="params">()</span> {</span>
