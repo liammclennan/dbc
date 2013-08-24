@@ -1,3 +1,4 @@
+dbc = require '../dbc'
 
 describe 'type checked function', ->
     o =
@@ -42,4 +43,36 @@ describe 'type checked function', ->
         f = dbc.wrap((thing) ->
             "pre-#{thing}-suf"
         , {0: [{validator:'required'}], 1: [{validator: 'string?'}]})
-        expect(-> f 'middle').toThrow();
+        expect(-> f 'middle').toThrow()
+
+    describe 'checking the return value', ->
+        describe 'with matching validator', ->
+            f = null
+            beforeEach ->
+                inner = (thing) ->
+                    "pre-#{thing}-suf"
+                f = dbc.wrap(inner, null, [{validator:'type',args:['string']}])
+            
+            it 'should pass', ->
+                expect(f 'foo').toBe('pre-foo-suf')
+
+        describe 'with failing validator', ->
+            f = null
+            beforeEach ->
+                inner = (thing) ->
+                    "pre-#{thing}-suf"
+                f = dbc.wrap(inner, null, [{validator:'type',args:['number']}])
+            
+            it 'should throw', ->
+                expect(-> f 'foo').toThrow()
+
+        describe 'with nullable validator', ->
+            f = null
+            beforeEach ->
+                inner = (thing) ->
+                    null
+                f = dbc.wrap(inner, null, [{validator:'type',args:['number?']}])
+            
+            it 'should pass', ->
+                expect(f 'foo').toBeNull()
+    

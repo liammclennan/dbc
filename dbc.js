@@ -5,16 +5,20 @@
         
     dbc = {
 
-        wrap: function(original, specs) {
+        wrap: function(original, specs, returnSpec) {
             return function () {
                 var a = arguments;
-                _.each(_.keys(specs), function (k,index) {
+                _.each(_.keys(specs || {}), function (k,index) {
                     var o={},s={};
                     o[k] = a[index];
                     s[k] = specs[k];
                     dbc.check(o,s);
                 });
-                return original.apply(this,a);    
+                var r = original.apply(this,a);
+                if (returnSpec) {
+                    dbc.check({ret: r}, {ret: returnSpec});
+                }
+                return r;
             };       
         },
 
