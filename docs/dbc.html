@@ -56,14 +56,74 @@
               <div class="pilwrap for-h2">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
+              <h2>check</h2>
+<p>Check asserts that an object <code>o</code> meets a specification <code>spec</code>.
+If <code>o</code> does not satisfy <code>spec</code> then an exception is thrown. 
+eg.</p>
+<pre><code> dbc.check({
+     name: &#39;John&#39;,
+     age: 22
+ }, {
+     name: [{validator:&#39;type&#39;,args:[&#39;string&#39;]}],
+     age: [{validator:&#39;type&#39;,args:[&#39;number&#39;]}],
+ });</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        check: <span class="keyword">function</span>(o, spec, message) {
+            message = message || <span class="string">''</span>
+            mode = <span class="string">'check'</span>;
+            <span class="keyword">try</span> {
+                applyValidators.call(<span class="keyword">this</span>, o, spec);    
+            } <span class="keyword">catch</span> (e) {
+                <span class="keyword">throw</span> <span class="keyword">new</span> Error(message ? message + <span class="string">': '</span> + e.message : e.message);
+            }            
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <h2>validate</h2>
+<p>Validate is the same as check, except that errors are returned
+as an array of messages instead of throwing an exception.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        validate: <span class="function"><span class="keyword">function</span> <span class="params">(o, spec)</span> {</span>
+            mode = <span class="string">'validate'</span>;
+            applyValidators.call(<span class="keyword">this</span>, o, spec);
+            <span class="keyword">return</span> messages;
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
               <h2>wrap</h2>
 <p>Wrap returns a wrapped function that applies &#39;specs&#39; validators to the
 functions arguments and &#39;returnSpec&#39; validators to the return value.
-ie </p>
-<pre><code> dbc.wrap(function add(f,s) { return f + s;}, {
+eg</p>
+<pre><code> var add = dbc.wrap(function (f,s) { 
+     return f + s;
+ }, {
+     // validators for the first arg
      0: [{validator:&#39;type&#39;, args:[&#39;number&#39;]}],
+     // validators for the second arg
      1:[{validator:&#39;type&#39;, args:[&#39;number&#39;]}]
- }, [{validator: &#39;type&#39;, args:[&#39;number&#39;]}]);</code></pre>
+ },
+ // validators for the return value 
+ [{validator: &#39;type&#39;, args:[&#39;number&#39;]}]);</code></pre>
 
             </div>
             
@@ -94,23 +154,25 @@ ie </p>
         </li>
         
         
-        <li id="section-4">
+        <li id="section-6">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>generate a constructor from a spec. The constructor
-validates that created objects meet the spec.
-ie   var Person = dbc.MakeConstructor({
-         name: [{validator:&#39;type&#39;,args:&#39;string&#39;}],
-         age: [{validator:&#39;type&#39;,args:&#39;number&#39;}]
-     });
-     Person.prototype.canDrive = dbc.wrap(function () { 
-         return this.age &gt; 16;
-     }, null, [{validator:&#39;type&#39;,args:&#39;number&#39;}]);
-     var p = new Person(&#39;John&#39;, 22);
-     p.canDrive(); // true </p>
+              <h2>makeConstructor</h2>
+<p>MakeConstructor generates a constructor from a spec. The constructor
+validates that the created objects meet the spec.
+ie   </p>
+<pre><code> var Person = dbc.MakeConstructor({
+     name: [{validator:&#39;type&#39;,args:&#39;string&#39;}],
+     age: [{validator:&#39;type&#39;,args:&#39;number&#39;}]
+ });
+ Person.prototype.canDrive = dbc.wrap(function () { 
+     return this.age &gt; 16;
+ }, null, [{validator:&#39;type&#39;,args:&#39;number&#39;}]);
+ var p = new Person(&#39;John&#39;, 22);
+ p.canDrive(); // true </code></pre>
 
             </div>
             
@@ -129,57 +191,75 @@ ie   var Person = dbc.MakeConstructor({
         </li>
         
         
-        <li id="section-5">
+        <li id="section-7">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>will throw on first error</p>
+              <h2>custom</h2>
+<p>The <code>custom</code> validator applies a custom predicate.
+eg</p>
+<pre><code> dbc.check({
+     number: 7
+ },{
+     number: [{validator:&#39;custom&#39;,args:[function isEven(n) {
+         return n % 2 === 0;
+     }]}]
+ });</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        check: <span class="keyword">function</span>(o, spec, message) {
-            message = message || <span class="string">''</span>
-            mode = <span class="string">'check'</span>;
-            <span class="keyword">try</span> {
-                applyValidators.call(<span class="keyword">this</span>, o, spec);    
-            } <span class="keyword">catch</span> (e) {
-                <span class="keyword">throw</span> <span class="keyword">new</span> Error(message ? message + <span class="string">': '</span> + e.message : e.message);
-            }            
-        },</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-6">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
-              </div>
-              <p>will return an array of messages</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>        validate: <span class="function"><span class="keyword">function</span> <span class="params">(o, spec)</span> {</span>
-            mode = <span class="string">'validate'</span>;
-            applyValidators.call(<span class="keyword">this</span>, o, spec);
-            <span class="keyword">return</span> messages;
-        },
-        custom: <span class="keyword">function</span>(v, test, message) {
+            <div class="content"><div class='highlight'><pre>        custom: <span class="keyword">function</span>(v, test, message) {
             <span class="keyword">if</span> (!isExisting(v)) <span class="keyword">return</span>;
             
             <span class="keyword">if</span> (!test(v)) {
                 storeMessage(message || <span class="string">'failed custom function condition for value '</span> + v);
             }
-        },
-        assert: <span class="keyword">function</span>(condition, message) {
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <h2>assert</h2>
+<p>Assert is for simple boolean assertions. eg</p>
+<pre><code> dbc.assert(6 === 9, &#39;Six should equal nine&#39;);</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        assert: <span class="keyword">function</span>(condition, message) {
             <span class="keyword">if</span> (!condition) {
                 storeMessage(message);
             }
-        },
-        type: <span class="function"><span class="keyword">function</span> <span class="params">(v, type, message)</span> {</span>
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <h2>type</h2>
+<p>Type asserts the type of a value using JavaScript&#39;s <code>typeof</code> operator. 
+In addition to the JavaScript types (undefined, object, boolean, number, string, function) you can also use <code>array</code>. eg</p>
+<pre><code> dbc.check({
+     name:&#39;John&#39;
+ }, {
+     name: [{validator:&#39;type&#39;,args: [&#39;string&#39;]}]
+ });</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        type: <span class="function"><span class="keyword">function</span> <span class="params">(v, type, message)</span> {</span>
             <span class="keyword">if</span> (type.charAt(type.length-<span class="number">1</span>) == <span class="string">'?'</span>) {
                 <span class="keyword">if</span> (!isExisting(v)) <span class="keyword">return</span>;
                 type = type.substring(<span class="number">0</span>, type.length-<span class="number">1</span>);
@@ -198,45 +278,207 @@ ie   var Person = dbc.MakeConstructor({
             <span class="keyword">if</span> ((<span class="keyword">typeof</span> v) != type) {
                 storeMessage(message);
             }
-        },
-        required: <span class="keyword">function</span>(v, message) {
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <h2>required</h2>
+<p>Required asserts that a value is not null or undefined. This validator does
+not require any args. eg</p>
+<pre><code> dbc.check({
+     name:&#39;John&#39;
+ }, {
+     name: [{validator:&#39;required&#39;}]
+ });</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        required: <span class="keyword">function</span>(v, message) {
             <span class="keyword">if</span> (!isExisting(v)) {
                 storeMessage(message || <span class="string">'expected a defined value'</span>);
             }  
-        },
-        isArray: <span class="function"><span class="keyword">function</span> <span class="params">(v, message)</span> {</span>
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <h2>isArray</h2>
+<p>IsArray asserts that a value is an array. This validator does
+not require any args. eg</p>
+<pre><code> dbc.check({
+     colours: [&#39;red&#39;,&#39;green&#39;,&#39;blue&#39;]
+ }, {
+     colours: [{validator:&#39;isArray&#39;}]
+ });</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        isArray: <span class="function"><span class="keyword">function</span> <span class="params">(v, message)</span> {</span>
             <span class="keyword">if</span> (isExisting(v) &amp;&amp; !_.isArray(v)) {
                 storeMessage(message || <span class="string">'expected an array'</span>)
             }
-        },
-        isEnumerable: <span class="function"><span class="keyword">function</span> <span class="params">(v, message)</span> {</span>
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <h2>isEnumerable</h2>
+<p>IsEnumerable asserts that a value has a forEach function. This validator does
+not require any args. eg</p>
+<pre><code> dbc.check({
+     colours: [&#39;red&#39;,&#39;green&#39;,&#39;blue&#39;]
+ }, {
+     colours: [{validator:&#39;isEnumerable&#39;}]
+ });</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        isEnumerable: <span class="function"><span class="keyword">function</span> <span class="params">(v, message)</span> {</span>
             <span class="keyword">if</span> (isExisting(v) &amp;&amp; <span class="keyword">typeof</span> v.forEach !== <span class="string">'function'</span>) {
                 storeMessage(message || <span class="string">'expected an object with a forEach function'</span>);
             }
-        },
-        isNonEmptyCollection: <span class="function"><span class="keyword">function</span> <span class="params">(v, message)</span> {</span>
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <h2>isNonEmptyCollection</h2>
+<p>isNonEmptyCollection asserts that a value has a length property greater than zero. This validator does
+not require any args. eg</p>
+<pre><code> dbc.check({
+     divs: $(&#39;div&#39;)     // assuming jQuery
+ }, {
+     divs: [{validator:&#39;isNonEmptyCollection&#39;}]
+ });</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        isNonEmptyCollection: <span class="function"><span class="keyword">function</span> <span class="params">(v, message)</span> {</span>
             <span class="keyword">if</span> (!isExisting(v)) <span class="keyword">return</span>;
             
             <span class="keyword">if</span> (!(<span class="keyword">typeof</span> v.length === <span class="string">'number'</span> &amp;&amp; v.length &gt; <span class="number">0</span>)) {
                 <span class="keyword">throw</span> <span class="keyword">new</span> Error(message || <span class="string">'expected collection with length &gt; 0'</span>);
             }
-        },
-        isFunction: <span class="keyword">function</span>(f, message) {
-            <span class="keyword">if</span> (isExisting(f) &amp;&amp; <span class="keyword">typeof</span> f != <span class="string">'function'</span>) {
-                storeMessage(message || <span class="string">'expected a function'</span>);
-            }
-        },
-        isObject: <span class="keyword">function</span>(o, message) {
-            <span class="keyword">if</span> (isExisting(o) &amp;&amp; (<span class="keyword">typeof</span> o) != <span class="string">'object'</span>) {
-                storeMessage(message || <span class="string">'argument is not an object'</span>);
-            }
-        },
-        isInstance: <span class="keyword">function</span>(o, type, message) {
-            <span class="keyword">if</span> (!isExisting(o) &amp;&amp; !(o <span class="keyword">instanceof</span> type)) {
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <h2>isFunction</h2>
+<p>isFunction asserts that a value is a function. This validator does
+not require any args. eg</p>
+<pre><code> dbc.check({
+     square: function (n) { return n * n; } 
+ }, {
+     square: [{validator:&#39;isFunction&#39;}]
+ });</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        isFunction: <span class="keyword">function</span>(f, message) {
+            <span class="keyword">this</span>.type(f, <span class="string">'function'</span>, message || <span class="string">'expected a function'</span>);
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <h2>isObject</h2>
+<p>isObject asserts that a value is an object. This validator does
+not require any args. eg</p>
+<pre><code> dbc.check({
+     thing: {}
+ }, {
+     thing: [{validator:&#39;isObject&#39;}]
+ });</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        isObject: <span class="keyword">function</span>(o, message) {
+            <span class="keyword">this</span>.type(o, <span class="string">'object'</span>, message || <span class="string">'expected an object'</span>);
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <h2>isInstance</h2>
+<p>isInstance asserts the constructor of an object. eg</p>
+<pre><code> dbc.check({
+     john: new Person(&#39;John&#39;)
+ }, {
+     john: [{validator:&#39;isInstance&#39;,args:[Person]}]
+ });</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        isInstance: <span class="keyword">function</span>(o, type, message) {
+            <span class="keyword">if</span> (isExisting(o) &amp;&amp; !(o <span class="keyword">instanceof</span> type)) {
                 storeMessage(message || <span class="string">"expected "</span> + o + <span class="string">" to be an instance of "</span> + type.name);
             }
-        },
-        functionArity: <span class="function"><span class="keyword">function</span> <span class="params">(f, arity, message)</span> {</span>
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <h2>functionArity</h2>
+<p>functionArity asserts the arity of a function. eg</p>
+<pre><code> dbc.check({
+     add: function (f,s) { return f + s; }
+ }, {
+     add: [{validator:&#39;functionArity&#39;,args:[2]}]
+ });</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        functionArity: <span class="function"><span class="keyword">function</span> <span class="params">(f, arity, message)</span> {</span>
             <span class="keyword">if</span> (!isExisting(f)) <span class="keyword">return</span>;
             <span class="keyword">this</span>.isFunction(f, <span class="string">'cannot check arity of an object that is not a function'</span>);
             <span class="keyword">if</span> (f.length !== arity) {

@@ -2,6 +2,8 @@
 
 It focuses especially on type assertions in an attempt to provide a small compensation for JavaScript's unfortunate dynamicness.
 
+[API Documentation](https://rawgithub.com/liammclennan/dbc/master/docs/dbc.html)
+
 Have a function that requires a numeric argument? Try:
 
 ```javascript

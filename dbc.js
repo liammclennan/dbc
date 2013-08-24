@@ -13,7 +13,19 @@
         // Public API
         // ==========
 
-        // will throw on first error
+        // check
+        // ---
+        // Check asserts that an object `o` meets a specification `spec`.
+        // If `o` does not satisfy `spec` then an exception is thrown. 
+        // eg.
+        //
+        //      dbc.check({
+        //          name: 'John',
+        //          age: 22
+        //      }, {
+        //          name: [{validator:'type',args:['string']}],
+        //          age: [{validator:'type',args:['number']}],
+        //      });
         check: function(o, spec, message) {
             message = message || ''
             mode = 'check';
@@ -24,16 +36,32 @@
             }            
         },
 
+        // validate
+        // -----
+        // Validate is the same as check, except that errors are returned
+        // as an array of messages instead of throwing an exception.
+        validate: function (o, spec) {
+            mode = 'validate';
+            applyValidators.call(this, o, spec);
+            return messages;
+        },
+
         // wrap
         // ----
         // Wrap returns a wrapped function that applies 'specs' validators to the
         // functions arguments and 'returnSpec' validators to the return value.
-        // ie 
+        // eg
         // 
-        //      dbc.wrap(function add(f,s) { return f + s;}, {
+        //      var add = dbc.wrap(function (f,s) { 
+        //          return f + s;
+        //      }, {
+        //          // validators for the first arg
         //          0: [{validator:'type', args:['number']}],
+        //          // validators for the second arg
         //          1:[{validator:'type', args:['number']}]
-        //      }, [{validator: 'type', args:['number']}]);
+        //      },
+        //      // validators for the return value 
+        //      [{validator: 'type', args:['number']}]);
         wrap: function(original, specs, returnSpec) {
             return function () {
                 var r;
@@ -58,9 +86,13 @@
             };       
         },
 
-        // generate a constructor from a spec. The constructor
-        // validates that created objects meet the spec.
-        // ie   var Person = dbc.MakeConstructor({
+        // makeConstructor
+        // ----
+        // MakeConstructor generates a constructor from a spec. The constructor
+        // validates that the created objects meet the spec.
+        // ie   
+        //
+        //      var Person = dbc.MakeConstructor({
         //          name: [{validator:'type',args:'string'}],
         //          age: [{validator:'type',args:'number'}]
         //      });
@@ -81,13 +113,18 @@
             return f;
         },
 
-
-        // will return an array of messages
-        validate: function (o, spec) {
-            mode = 'validate';
-            applyValidators.call(this, o, spec);
-            return messages;
-        },
+        // custom
+        // ---
+        // The `custom` validator applies a custom predicate.
+        // eg
+        //
+        //      dbc.check({
+        //          number: 7
+        //      },{
+        //          number: [{validator:'custom',args:[function isEven(n) {
+        //              return n % 2 === 0;
+        //          }]}]
+        //      });
         custom: function(v, test, message) {
             if (!isExisting(v)) return;
             
@@ -95,11 +132,28 @@
                 storeMessage(message || 'failed custom function condition for value ' + v);
             }
         },
+
+        // assert
+        // ---
+        // Assert is for simple boolean assertions. eg
+        //
+        //      dbc.assert(6 === 9, 'Six should equal nine');
         assert: function(condition, message) {
             if (!condition) {
                 storeMessage(message);
             }
         },
+
+        // type
+        // ----
+        // Type asserts the type of a value using JavaScript's `typeof` operator. 
+        // In addition to the JavaScript types (undefined, object, boolean, number, string, function) you can also use `array`. eg
+        //
+        //      dbc.check({
+        //          name:'John'
+        //      }, {
+        //          name: [{validator:'type',args: ['string']}]
+        //      });
         type: function (v, type, message) {
             if (type.charAt(type.length-1) == '?') {
                 if (!isExisting(v)) return;
@@ -120,21 +174,65 @@
                 storeMessage(message);
             }
         },
+
+        // required
+        // ---
+        // Required asserts that a value is not null or undefined. This validator does
+        // not require any args. eg
+        //
+        //      dbc.check({
+        //          name:'John'
+        //      }, {
+        //          name: [{validator:'required'}]
+        //      });
         required: function(v, message) {
             if (!isExisting(v)) {
                 storeMessage(message || 'expected a defined value');
             }  
         },
+
+        // isArray
+        // ---
+        // IsArray asserts that a value is an array. This validator does
+        // not require any args. eg
+        //
+        //      dbc.check({
+        //          colours: ['red','green','blue']
+        //      }, {
+        //          colours: [{validator:'isArray'}]
+        //      });
         isArray: function (v, message) {
             if (isExisting(v) && !_.isArray(v)) {
                 storeMessage(message || 'expected an array')
             }
         },
+
+        // isEnumerable
+        // ---
+        // IsEnumerable asserts that a value has a forEach function. This validator does
+        // not require any args. eg
+        //
+        //      dbc.check({
+        //          colours: ['red','green','blue']
+        //      }, {
+        //          colours: [{validator:'isEnumerable'}]
+        //      });
         isEnumerable: function (v, message) {
             if (isExisting(v) && typeof v.forEach !== 'function') {
                 storeMessage(message || 'expected an object with a forEach function');
             }
         },
+
+        // isNonEmptyCollection
+        // ---
+        // isNonEmptyCollection asserts that a value has a length property greater than zero. This validator does
+        // not require any args. eg
+        //
+        //      dbc.check({
+        //          divs: $('div')     // assuming jQuery
+        //      }, {
+        //          divs: [{validator:'isNonEmptyCollection'}]
+        //      });
         isNonEmptyCollection: function (v, message) {
             if (!isExisting(v)) return;
             
@@ -142,21 +240,59 @@
                 throw new Error(message || 'expected collection with length > 0');
             }
         },
+
+        // isFunction
+        // ---
+        // isFunction asserts that a value is a function. This validator does
+        // not require any args. eg
+        //
+        //      dbc.check({
+        //          square: function (n) { return n * n; } 
+        //      }, {
+        //          square: [{validator:'isFunction'}]
+        //      });
         isFunction: function(f, message) {
-            if (isExisting(f) && typeof f != 'function') {
-                storeMessage(message || 'expected a function');
-            }
+            this.type(f, 'function', message || 'expected a function');
         },
+
+        // isObject
+        // ---
+        // isObject asserts that a value is an object. This validator does
+        // not require any args. eg
+        //
+        //      dbc.check({
+        //          thing: {}
+        //      }, {
+        //          thing: [{validator:'isObject'}]
+        //      });
         isObject: function(o, message) {
-            if (isExisting(o) && (typeof o) != 'object') {
-                storeMessage(message || 'argument is not an object');
-            }
+            this.type(o, 'object', message || 'expected an object');
         },
+
+        // isInstance
+        // ---
+        // isInstance asserts the constructor of an object. eg
+        //
+        //      dbc.check({
+        //          john: new Person('John')
+        //      }, {
+        //          john: [{validator:'isInstance',args:[Person]}]
+        //      });
         isInstance: function(o, type, message) {
-            if (!isExisting(o) && !(o instanceof type)) {
+            if (isExisting(o) && !(o instanceof type)) {
                 storeMessage(message || "expected " + o + " to be an instance of " + type.name);
             }
         },
+
+        // functionArity
+        // ---
+        // functionArity asserts the arity of a function. eg
+        //
+        //      dbc.check({
+        //          add: function (f,s) { return f + s; }
+        //      }, {
+        //          add: [{validator:'functionArity',args:[2]}]
+        //      });
         functionArity: function (f, arity, message) {
             if (!isExisting(f)) return;
             this.isFunction(f, 'cannot check arity of an object that is not a function');
