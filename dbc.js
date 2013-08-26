@@ -27,7 +27,7 @@
         //          age: [{validator:'type',args:['number']}],
         //      });
         check: function(o, spec, message) {
-            message = message || ''
+            message = message || '';
             mode = 'check';
             try {
                 applyValidators.call(this, o, spec);    
@@ -106,9 +106,9 @@
                 _.each(_.keys(spec), function (key) {
                     c[key] = prps[key];			
                 });
-                dbc.check(c, c.__spec);
+                dbc.check(c, f.__spec);
             };
-            f.prototype.__spec = spec;
+            f.__spec = spec;
             return f;
         },
 
