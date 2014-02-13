@@ -68,6 +68,27 @@ Validate an object (same as check except that it returns an array of errors inst
         c: [{validator: 'isFunction'}, {validator: 'functionArity', args: [2, {message: 'This is a more advanced error object', field: 'c'}]}]
     });
 ```
+<a name="validatedobject"/>
+Define a validated type of object:
+
+```javascript
+    // create a constructor that automatically validates its schema
+    var AjaxOptions = dbc.makeConstructor({
+        type:       [
+                        {validator:'type', args:['string']},
+                        {validator:'oneOf', args:[['GET','POST','PUT','DELETE']]}
+                    ],
+        url:        [{validator:'type',args:['string']}],
+        dataType:   [{validator:'type',args:['string?']}]
+    });
+
+    // define a function that validates its argument (is a string) and its return type (is an AjaxOptions)
+    AjaxOptions.fromCorsRequest = dbc.wrap(function (corsRequestText) {
+        return new AjaxOptions(new CorsRequest(corsRequestText).getJSON());
+    }, {
+        0: [{validator:'type', args:['string']}]
+    }, [{validator:'isInstance',args:[AjaxOptions]}]);
+```
 
 Test
 ----
