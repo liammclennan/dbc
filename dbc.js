@@ -104,7 +104,7 @@
             var f = function (prps) {
                 var c = this;
                 _.each(_.keys(spec), function (key) {
-                    c[key] = prps[key];			
+                    c[key] = prps[key];         
                 });
                 dbc.check(c, f.__spec);
             };
@@ -167,10 +167,25 @@
                 return;
             }
             if (typeof v == 'undefined' || v == null) {
-                storeMessage('Expected type of ' + type + ' but was null or undefined');
+                storeMessage(message || 'Expected type of ' + type + ' but was null or undefined');
             }
             if ((typeof v) != type) {
                 storeMessage(message);
+            }
+        },
+
+        // oneOf
+        // ---
+        // asserts that the value is equal to one of the supplied possibilities.
+        //
+        //      dbc.oneOf(2, [1,2,3]);
+        oneOf: function (v, possibilities, message) {
+            if (!isExisting(v)) return;
+
+            if (!_.any(possibilities, function (possibility) {
+                return possibility === v;
+            })) {
+                storeMessage(message || 'expected one of the defined possibilities');
             }
         },
 
@@ -236,8 +251,32 @@
             if (!isExisting(v)) return;
             
             if (!(typeof v.length === 'number' && v.length > 0)) {
-                throw new Error(message || 'expected collection with length > 0');
+                storeMessage(message || 'expected collection with length > 0');
             }
+        },
+
+        // isJqueryPromise
+        // ---
+        // asserts that the object is a jquery promise.
+        //
+        //      dbc.isJqueryPromise(jQuery.Deferred().promise());
+        isJqueryPromise: function (v, message) {
+            if (!isExisting(v)) return;
+
+            dbc.hasFunctions(v, ['done','fail','always','then'], message || 'expected a jquery promise object');
+        },
+
+        // hasFunctions
+        // ---
+        // asserts that the object has properties of the supplied names that are functions
+        //
+        //      dbc.hasFunctions({ toString: function () {} }, ['toString']);
+        hasFunctions: function (v, functions, message) {
+            if (!isExisting(v)) return;
+
+            _.each(functions, function (functionName) {
+                dbc.isFunction(v[functionName], message || 'expected an object with a function ' + functionName);
+            });
         },
 
         // isFunction
@@ -313,6 +352,7 @@
             var validators = spec[key];
             
             validators.forEach(function(validator) {
+                if (!dbc[validator.validator]) throw new Error("Validator " + validator.validator + " was not found");
                 dbc[validator.validator].apply(dbc, [o[key]].concat(validator.args || []))
             });
         });
