@@ -26,7 +26,7 @@
         //          name: [{validator:'type',args:['string']}],
         //          age: [{validator:'type',args:['number']}],
         //      });
-        check: function(o, spec, message) {
+        check: function(o, spec, message) {            
             message = message || '';
             mode = 'check';
             try {
@@ -345,6 +345,15 @@
     }
 
     function applyValidators(o, spec) {
+        if (!o) {
+            console.warn("unable to validate undefined");
+            throw new Error("unable to validate undefined");
+        }
+        if (!spec) {
+            console.warn("unable to validate undefined spec");
+            throw new Error("unable to validate undefined spec");
+        }
+
         var specKeys = _.keys(spec),
             dbc = this;
 
