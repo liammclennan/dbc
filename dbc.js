@@ -168,10 +168,18 @@
             }
             if (typeof v == 'undefined' || v == null) {
                 storeMessage(message || 'Expected type of ' + type + ' but was null or undefined');
+                return;
             }
             if ((typeof v) != type) {
                 storeMessage(message);
             }
+        },
+
+        dbcType: function (v, ctor, message) {     
+            if (!isExisting(v)) return;  
+            message = message || 'expected an instance of ' + ctor;
+
+            applyValidators.call(this, v, ctor.__spec);            
         },
 
         // oneOf
@@ -353,6 +361,7 @@
             console.warn("unable to validate undefined spec");
             throw new Error("unable to validate undefined spec");
         }
+        messages = [];
 
         var specKeys = _.keys(spec),
             dbc = this;
