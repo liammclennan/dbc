@@ -34,6 +34,26 @@ describe 'dbc', ->
                 result = dbc.validate o, ThingWithACut.__spec
                 expect(result.length).toBe(1)
 
+    describe 'validate child collections', ->
+        Cut = dbc.makeConstructor
+            Id: [{ validator: 'type', args: ['number'] }]
+            Name: [{ validator: 'type', args: ['string'] }]
+        ThingWithACut = dbc.makeConstructor
+            ACuts: [{validator: 'dbcTypes', args: [Cut]}]
+
+        describe 'valid children', ->
+            o = {ACuts: [{ Id: 1, Name: 'd-rump' },{ Id: 77, Name: '' }]}
+
+            it 'should validate successfully', ->
+                result = dbc.validate o, ThingWithACut.__spec
+                expect(result.length).toBe(0)
+
+        describe 'invalid child', ->
+            o = {ACuts: [{Id:2, Name:'Foo'},{ Id: 1 }]}
+
+            it 'should fail validation', ->
+                result = dbc.validate o, ThingWithACut.__spec
+                expect(result.length).toBe(1)
 
     describe 'validate child collection', ->
 
@@ -73,6 +93,18 @@ describe 'dbc', ->
             o =
                 a: 1
                 b: 'foo'
+            spec =
+                a: [{validator: 'required'}, {validator: 'type', args: ['number']}]
+                b: [{validator: 'type', args: ['string']}]
+
+            it 'should pass', ->
+                dbc.check o, spec
+
+        describe 'simple object with extra property', ->
+            o =
+                a: 1
+                b: 'foo'
+                c: 'extra'
             spec =
                 a: [{validator: 'required'}, {validator: 'type', args: ['number']}]
                 b: [{validator: 'type', args: ['string']}]
