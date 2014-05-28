@@ -1,6 +1,15 @@
 describe 'dbc', ->
     dbc = require '../dbc'
 
+    describe 'validate NaN as a number', ->
+        o = { age: NaN }
+        spec = 
+            age: [{validator:'type', args: ['number']}]
+
+        it 'should fail', ->
+            result = dbc.validate o, spec
+            expect(result.length).toBe(1)
+
     describe 'validate undefined', ->
         o = undefined
         spec =
