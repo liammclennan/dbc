@@ -169,11 +169,11 @@
                 return;
             }
             if (typeof v == 'undefined' || v == null) {
-                storeMessage(message || 'Expected type of ' + type + ' but was null or undefined');
+                storeMessage('Expected type of ' + type + ' but was null or undefined');
                 return;
             }
             if (type == 'number' && isNaN(v)) {
-                storeMessage(message || 'Expected type of ' + type + ' but was NaN');
+                storeMessage('Expected type of ' + type + ' but was NaN');
                 return;
             }
             if ((typeof v) != type) {
