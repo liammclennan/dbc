@@ -1,6 +1,39 @@
 describe 'dbc', ->
     dbc = require '../dbc'
 
+    describe 'validate range', ->
+        spec =
+            hscw: [{validator:'range', args:[0,100]}]
+
+        describe 'in range', ->
+            it 'should succeed', ->
+                for p in [44.99,0,100,-0]
+                    result = dbc.validate {hscw: p}, spec
+                    expect(result.length).toBe(0)
+
+        describe 'validate invalid percentage', ->
+            it 'should fail', ->
+                for p in [-10,'cat',100.1]
+                    result = dbc.validate {hscw: p}, spec
+                    expect(result.length).toBe(1)
+                
+
+    describe 'validate percentage', ->
+        spec = 
+            hscw: [{validator:'percentage'}]
+
+        describe 'validate valid percentage', ->
+            it 'should succeed', ->
+                for p in [44.99,0,100,-0]
+                    result = dbc.validate {hscw: p}, spec
+                    expect(result.length).toBe(0)
+
+        describe 'validate invalid percentage', ->
+            it 'should fail', ->
+                for p in [-10,'cat',100.1]
+                    result = dbc.validate {hscw: p}, spec
+                    expect(result.length).toBe(1)
+
     describe 'validate NaN as a number', ->
         o = { age: NaN }
         spec = 

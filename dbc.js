@@ -214,6 +214,22 @@
             },this);            
         },
 
+        percentage: function (v, message) {
+            if (!isExisting(v)) return; 
+
+            if (typeof v != 'number' || v < 0 || v > 100) {
+                storeMessage(message || 'expected a percentage');
+            }
+        },
+
+        range: function (v, lower, upper, message) {
+            if (!isExisting(v)) return; 
+
+            if (typeof v != 'number' || v < lower || v > upper) {
+                storeMessage(message || 'expected a value between ' +lower + ' and ' + upper);
+            }
+        },
+
         // oneOf
         // ---
         // asserts that the value is equal to one of the supplied possibilities.
